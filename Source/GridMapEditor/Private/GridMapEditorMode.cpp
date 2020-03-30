@@ -1,6 +1,7 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "GridMapEditorMode.h"
+#include "DrawDebugHelpers.h"
 #include "EditorModeManager.h"
 #include "EditorViewportClient.h"
 #include "Engine/CollisionProfile.h"
@@ -23,6 +24,7 @@ const FEditorModeID FGridMapEditorMode::EM_GridMapEditorModeId = TEXT("EM_GridMa
 
 FGridMapEditorMode::FGridMapEditorMode()
 	: FEdMode()
+	, bIsDrawingDebug(true)
 {
 	BrushDefaultHighlightColor = FColor(127, 127, 255, 255);
 	BrushWarningHighlightColor = FColor::Red;
@@ -225,12 +227,13 @@ bool FGridMapEditorMode::CapturedMouseMove(FEditorViewportClient* InViewportClie
 void FGridMapEditorMode::PaintTile()
 {
 	// are we erasing?
-	if (bIsPainting && bBrushTraceValid && UISettings.GetPaintMode() == EGridMapPaintMode::Erase)
+	if (bIsPainting && bBrushTraceValid && UISettings.GetPaintMode() == EGridMapPaintMode::Erase && UISettings.GetCurrentTileSet().IsValid())
 	{
 		// and we're on top of something?
-		if (BrushTraceHitActor.IsValid())
+		if (BrushTraceHitActor.IsValid() && Cast<AStaticMeshActor>(BrushTraceHitActor.Get()))
 		{
-			GetWorld()->DestroyActor(BrushTraceHitActor.Get());
+			EraseTile(Cast<AStaticMeshActor>(BrushTraceHitActor.Get()), UISettings.GetCurrentTileSet()->Name);
+			BrushTraceHitActor.Reset();
 		}
 		return;
 	}
@@ -244,8 +247,7 @@ void FGridMapEditorMode::PaintTile()
 		if (!BrushTraceHitActor.IsValid())
 		{
 			// figure out the bitmask for this tile
-			int32 SnapWidth = GEditor->GetGridSize();
-			uint32 Adjacency = GetTileAdjacencyBitmask(GetWorld(), BrushLocation, SnapWidth, TileSet->Name);
+			uint32 Adjacency = GetTileAdjacencyBitmask(GetWorld(), BrushLocation, TileSet->Name);
 			const FGridMapTileList* TileList = TileSet->FindTilesForAdjacency(Adjacency);
 			if (TileList)
 			{
@@ -272,7 +274,12 @@ void FGridMapEditorMode::PaintTile()
 				MeshActor->SetActorTransform(BrushTransform);
 
 				// update adjacent tiles
-				UpdateAdjacentTiles(GetWorld(), MeshActor, TileSet->Name);
+				TArray<FAdjacentTile> AdjacentTiles;
+				if (GetAdjacentTiles(GetWorld(), BrushLocation, AdjacentTiles))
+				{
+					UpdateAdjacentTiles(GetWorld(), AdjacentTiles, TileSet->Name);
+				}
+				
 
 				// Switch to another mesh from the list
 				//ResetBrushMesh();
@@ -283,6 +290,19 @@ void FGridMapEditorMode::PaintTile()
 		{
 
 		}
+	}
+}
+
+void FGridMapEditorMode::EraseTile(AStaticMeshActor* TileToErase, const FName& Tag)
+{
+	TArray<FAdjacentTile> AdjacentTiles;
+	bool hasAdjacentTiles = GetAdjacentTiles(GetWorld(), TileToErase->GetActorLocation(), AdjacentTiles);
+	
+	GetWorld()->DestroyActor(TileToErase);
+
+	if (hasAdjacentTiles)
+	{
+		UpdateAdjacentTiles(GetWorld(), AdjacentTiles, Tag);
 	}
 }
 
@@ -345,29 +365,14 @@ void FGridMapEditorMode::GridMapBrushTrace(FEditorViewportClient* ViewportClient
 			BrushLocation = SnapLocation(IntersectionLocation);
 			bBrushTraceValid = true;
 
-			// did we hit something we own?
-			const FVector TraceStart(InRayOrigin);
-			const FVector TraceEnd(InRayOrigin + InRayDirection * HALF_WORLD_MAX);
-
-			FHitResult Hit;
-			if (GridMapStaticMeshTrace(TraceStart, TraceEnd, Hit))
+			TArray<AStaticMeshActor*> HitTiles;
+			TilesAt(GetWorld(), BrushLocation, HitTiles);
+			if (HitTiles.Num() > 0)
 			{
-				if (Hit.Actor.IsValid() && Hit.Actor->IsA<AStaticMeshActor>() && FGridMapHelper::IsOwnedByGridMap(Hit.Actor.Get()))
-				{
-					BrushTraceHitActor = Hit.Actor;
-				}
+				BrushTraceHitActor = HitTiles[0];
 			}
 		}
 	}
-}
-
-bool FGridMapEditorMode::GridMapStaticMeshTrace(const FVector& TraceStart, const FVector& TraceEnd, FHitResult& OutHit) const
-{
-	UWorld* World = GetWorld();
-	
-	static FName NAME_GridMapBrush = FName(TEXT("GridMapBrush"));
-	FCollisionQueryParams queryParams(NAME_GridMapBrush);
-	return World->LineTraceSingleByChannel(OutHit, TraceStart, TraceEnd, ECollisionChannel::ECC_WorldStatic, queryParams);
 }
 
 FVector FGridMapEditorMode::SnapLocation(const FVector& InLocation)
@@ -429,85 +434,74 @@ EGridMapEditingState FGridMapEditorMode::GetEditingState() const
 	return EGridMapEditingState::Enabled;
 }
 
-uint32 FGridMapEditorMode::GetTileAdjacencyBitmask(UWorld* World, const FVector& Origin, int32 Size, FName Tag) const
+uint32 FGridMapEditorMode::GetTileAdjacencyBitmask(UWorld* World, const FVector& Origin, FName Tag) const
 {
 	uint32 bitmask = 0;
 
-	static const int TileCount = 4;
-
-	static FVector Offsets[TileCount] {
-		FVector(0, -Size, 0),	// top-center
-		FVector(-Size, 0, 0),	// center-left
-		FVector(Size, 0, 0),	// center-right
-		FVector(0, Size, 0),	// botton-center
-	};
-
-	static int32 Bits[TileCount]{
-		1 << 0,
-		1 << 1,
-		1 << 2,
-		1 << 3,
-	};
-
-	for (int i = 0; i < TileCount; ++i)
+	TArray<FAdjacentTile> AdjacentTiles;
+	if (GetAdjacentTiles(World, Origin, AdjacentTiles))
 	{
-		if (IsMatchingTilePresentAt(World, Origin + Offsets[i], Size / 3, Tag))
-			bitmask |= Bits[i];
+		for (const FAdjacentTile& AdjacentTile : AdjacentTiles)
+		{
+			bitmask |= AdjacentTile.Value;
+		}
 	}
 
 	return bitmask;
 }
 
-bool FGridMapEditorMode::IsMatchingTilePresentAt(UWorld* World, const FVector& Origin, int32 Radius, FName Tag) const
-{
-	AStaticMeshActor* StaticMeshActor = MatchingTileAt(World, Origin, Radius, Tag);
-	if (StaticMeshActor)
-		return true;
-	return false;
-}
-
-AStaticMeshActor* FGridMapEditorMode::MatchingTileAt(class UWorld* World, const FVector& Origin, int32 Radius, FName Tag) const
+bool FGridMapEditorMode::TilesAt(UWorld* World, const FVector& Origin, TArray<AStaticMeshActor*>& OutTiles) const
 {
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	TArray<AActor*> ActorsToIgnore;
 	TArray<AActor*> OutActors;
 
-	if (UKismetSystemLibrary::SphereOverlapActors(World, Origin, Radius, ObjectTypes, AStaticMeshActor::StaticClass(), ActorsToIgnore, OutActors))
+	if (UKismetSystemLibrary::SphereOverlapActors(World, Origin, GetTileCheckRadius(), ObjectTypes, AStaticMeshActor::StaticClass(), ActorsToIgnore, OutActors))
 	{
+		OutTiles.Reserve(OutActors.Num());
 		for (AActor* OutActor : OutActors)
 		{
-			if (OutActor->Tags.Contains(Tag))
-				return Cast<AStaticMeshActor>(OutActor);
+			if (Cast<AStaticMeshActor>(OutActor) && FGridMapHelper::IsOwnedByGridMap(OutActor))
+				OutTiles.Add(Cast<AStaticMeshActor>(OutActor));
 		}
+	}
+
+	return OutTiles.Num() > 0;
+}
+
+AStaticMeshActor* FGridMapEditorMode::MatchingTileAt(class UWorld* World, const FVector& Origin, FName Tag) const
+{
+	TArray<AStaticMeshActor*> OutTiles;
+	TilesAt(World, Origin, OutTiles);
+
+	for (AStaticMeshActor* OutTile : OutTiles)
+	{
+		if (OutTile->Tags.Contains(Tag))
+			return OutTile;
 	}
 
 	return nullptr;
 }
 
-void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, AStaticMeshActor* RootActor, const FName& Tag)
+bool FGridMapEditorMode::IsMatchingTilePresentAt(UWorld* World, const FVector& Origin, FName Tag) const
+{
+	AStaticMeshActor* StaticMeshActor = MatchingTileAt(World, Origin, Tag);
+	if (StaticMeshActor)
+		return true;
+	return false;
+}
+
+void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, const TArray<FAdjacentTile>& RootActors, const FName& Tag)
 {
 	UGridMapTileSet* TileSet = UISettings.GetCurrentTileSet().Get();
-	int32 SnapWidth = GEditor->GetGridSize();
 
-	static const int TileCount = 4;
-	static FVector Offsets[TileCount]{
-		FVector(0, -SnapWidth, 0),	// top-center
-		FVector(-SnapWidth, 0, 0),	// center-left
-		FVector(SnapWidth, 0, 0),	// center-right
-		FVector(0, SnapWidth, 0),	// botton-center
-	};	
-
+	TArray<FAdjacentTile> AdjacentTiles;
 	TArray<AStaticMeshActor*> ProcessedActors;
 	TQueue<AStaticMeshActor*> QueuedActors;
 
-	// Queue the neighbors of this tile
-	for (int i = 0; i < TileCount; ++i)
+	for (const FAdjacentTile& RootTile : RootActors)
 	{
-		AStaticMeshActor* AdjacentActor = MatchingTileAt(World, RootActor->GetActorLocation() + Offsets[i], SnapWidth / 3, Tag);
-		if (AdjacentActor && !ProcessedActors.Contains(AdjacentActor))
-		{
-			QueuedActors.Enqueue(AdjacentActor);
-		}
+		QueuedActors.Enqueue(RootTile.Key);
 	}
 	
 	while (!QueuedActors.IsEmpty())
@@ -515,7 +509,11 @@ void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, AStaticMeshActor* Ro
 		AStaticMeshActor* CurrentActor = nullptr;
 		QueuedActors.Dequeue(CurrentActor);
 
-		uint32 Adjacency = GetTileAdjacencyBitmask(GetWorld(), CurrentActor->GetActorLocation(), SnapWidth, TileSet->Name);
+		// have we already been processed?
+		if (ProcessedActors.Contains(CurrentActor))
+			continue;
+
+		uint32 Adjacency = GetTileAdjacencyBitmask(GetWorld(), CurrentActor->GetActorLocation(), TileSet->Name);
 		const FGridMapTileList* TileList = TileSet->FindTilesForAdjacency(Adjacency);
 		if (TileList == nullptr)
 		{
@@ -529,19 +527,70 @@ void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, AStaticMeshActor* Ro
 		if (CurrentStaticMesh == ExpectedStaticMesh)
 			continue;
 
+		if (bIsDrawingDebug)
+		{
+			DrawDebugPoint(GetWorld(), CurrentActor->GetActorLocation(), 10.f, FColor::Yellow, false, 5.0f, 0);
+		}
+
 		// it has changed, so let's update it
 		CurrentActor->GetStaticMeshComponent()->SetStaticMesh(ExpectedStaticMesh);
 		CurrentActor->SetActorRotation(TileList->Rotation);
 		ProcessedActors.Add(CurrentActor);
 
 		// find any neighbors that haven't been updated, and queue them for an update
-		for (int i = 0; i < TileCount; ++i)
+		if (GetAdjacentTiles(World, CurrentActor->GetActorLocation(), AdjacentTiles))
 		{
-			AStaticMeshActor* AdjacentActor = MatchingTileAt(World, CurrentActor->GetActorLocation() + Offsets[i], SnapWidth / 3, Tag);
-			if (AdjacentActor && !ProcessedActors.Contains(AdjacentActor))
+			for (const FAdjacentTile& AdjacentTile : AdjacentTiles)
 			{
-				QueuedActors.Enqueue(AdjacentActor);
+				if (AdjacentTile.Key && !ProcessedActors.Contains(AdjacentTile.Key))
+				{
+					QueuedActors.Enqueue(AdjacentTile.Key);
+				}
 			}
 		}
 	}
+}
+
+bool FGridMapEditorMode::GetAdjacentTiles(UWorld* World, const FVector& Origin, TArray<TPair<AStaticMeshActor*, uint32>>& OutAdjacentTiles) const
+{
+	static const int TileCount = 4;
+
+	static FVector Offsets[TileCount]{
+		FVector(0, -GetTileSize(), 0),	// top-center
+		FVector(-GetTileSize(), 0, 0),	// center-left
+		FVector(GetTileSize(), 0, 0),	// center-right
+		FVector(0, GetTileSize(), 0),	// botton-center
+	};
+
+	static uint32 Bits[TileCount]{
+		1 << 0,
+		1 << 1,
+		1 << 2,
+		1 << 3,
+	};
+
+	TArray<AStaticMeshActor*> Tiles;
+	for (int i = 0; i < TileCount; ++i)
+	{
+		if (TilesAt(World, Origin + Offsets[i], Tiles))
+		{
+			for (AStaticMeshActor* Tile : Tiles)
+			{
+				OutAdjacentTiles.Add(TPair<AStaticMeshActor*, uint32>(Tile, Bits[i]));
+			}
+			Tiles.Empty();
+		}
+	}
+
+	return OutAdjacentTiles.Num() > 0;
+}
+
+int32 FGridMapEditorMode::GetTileSize() const
+{
+	return GEditor->GetGridSize();
+}
+
+float FGridMapEditorMode::GetTileCheckRadius() const
+{
+	return GetTileSize() / 3.0f;
 }

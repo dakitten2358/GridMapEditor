@@ -9,6 +9,9 @@
 
 class FGridMapEditorMode : public FEdMode
 {
+protected:
+	typedef TPair<class AStaticMeshActor*, uint32> FAdjacentTile;
+
 public:
 	const static FEditorModeID EM_GridMapEditorModeId;
 
@@ -50,16 +53,25 @@ private:
 	void OnSetPaintTiles();
 
 	void GridMapBrushTrace(FEditorViewportClient* ViewportClient, const FVector& InRayOrigin, const FVector& InRayDirection);
-	bool GridMapStaticMeshTrace(const FVector& TraceStart, const FVector& TraceEnd, FHitResult& OutHit) const;
+	
+	int32 GetTileSize() const;
+	float GetTileCheckRadius() const;
+
 	FVector SnapLocation(const FVector& InLocation);
 
 	void PaintTile();
+	void EraseTile(class AStaticMeshActor* TileToErase, const FName& Tag);
 
-	uint32 GetTileAdjacencyBitmask(class UWorld* World, const FVector& Origin, int32 Size, FName Tag) const;
-	bool IsMatchingTilePresentAt(class UWorld* World, const FVector& Origin, int32 Radius, FName Tag) const;
-	class AStaticMeshActor* MatchingTileAt(class UWorld* World, const FVector& Origin, int32 Radius, FName Tag) const;
+	uint32 GetTileAdjacencyBitmask(class UWorld* World, const FVector& Origin, FName Tag) const;
+	
+	bool TilesAt(class UWorld* World, const FVector& Origin, TArray<class AStaticMeshActor*>& OutTiles) const;
+	class AStaticMeshActor* MatchingTileAt(class UWorld* World, const FVector& Origin, FName Tag) const;
+	bool IsMatchingTilePresentAt(class UWorld* World, const FVector& Origin, FName Tag) const;
 
-	void UpdateAdjacentTiles(class UWorld* World, class AStaticMeshActor* RootActor, const FName& Tag);
+	bool GetAdjacentTiles(class UWorld* World, const FVector& Origin, TArray<TPair<class AStaticMeshActor*, uint32>>& OutAdjacentTiles) const;
+	
+	void UpdateAdjacentTiles(class UWorld* World, const TArray<FAdjacentTile>& RootActors, const FName& Tag);
+
 
 public:
 	FGridMapEditorUISettings UISettings;
@@ -69,6 +81,7 @@ public:
 	
 private:
 	bool bIsPainting;
+	bool bIsDrawingDebug;
 
 	bool bBrushTraceValid;
 	FVector BrushLocation;
