@@ -20,6 +20,7 @@ public:
 
 private:	// construction helpers
 	TSharedRef<SWidget> BuildToolBar();
+	TSharedRef<SWidget> BuildPaintOptions();
 
 private:
 	bool IsGridMapEditorEnabled() const;

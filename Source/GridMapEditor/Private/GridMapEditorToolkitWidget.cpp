@@ -4,6 +4,7 @@
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "GridMapEditCommands.h"
 #include "GridMapEditorMode.h"
+#include "GridMapStyleSet.h"
 #include "SlateOptMacros.h"
 #include "TileSet.h"
 #include "Widgets/Input/SCheckBox.h"
@@ -19,13 +20,6 @@ BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SGridMapEditorToolkitWidget::Construct(const FArguments& InArgs)
 {
 	GridMapEditorMode = (FGridMapEditorMode*)GLevelEditorModeTools().GetActiveMode(FGridMapEditorMode::EM_GridMapEditorModeId);
-
-	// Everything (or almost) uses this padding, change it to expand the padding.
-	FMargin StandardPadding(6.f, 3.f);
-	FMargin StandardLeftPadding(6.f, 3.f, 3.f, 3.f);
-	FMargin StandardRightPadding(3.f, 3.f, 6.f, 3.f);
-
-	FSlateFontInfo StandardFont = FEditorStyle::GetFontStyle(TEXT("PropertyWindow.NormalFont"));
 
 	const FText BlankText = FText::GetEmpty();
 
@@ -62,7 +56,7 @@ void SGridMapEditorToolkitWidget::Construct(const FArguments& InArgs)
 				[
 					SNew(SBorder)
 					.BorderImage(FEditorStyle::GetBrush("ToolPanel.DarkGroupBorder"))
-					.Padding(StandardPadding)
+					.Padding(FGridMapStyleSet::StandardPadding)
 					[
 						SNew(SVerticalBox)
 
@@ -72,7 +66,7 @@ void SGridMapEditorToolkitWidget::Construct(const FArguments& InArgs)
 						[
 							SNew(SHorizontalBox)
 							+ SHorizontalBox::Slot()
-							.Padding(StandardLeftPadding)
+							.Padding(FGridMapStyleSet::StandardLeftPadding)
 							.HAlign(HAlign_Left)
 							[
 								SNew(STextBlock)
@@ -80,127 +74,13 @@ void SGridMapEditorToolkitWidget::Construct(const FArguments& InArgs)
 								.TextStyle(FEditorStyle::Get(), "FoliageEditMode.ActiveToolName.Text")
 							]
 						]
-
-						// Brush Options
-						+ SVerticalBox::Slot()
-						.AutoHeight()
-						.Padding(StandardPadding)
-						[
-							SNew(SHeader)
-							.Visibility(this, &SGridMapEditorToolkitWidget::GetVisibility_PaintOptions)
-							[
-								SNew(STextBlock)
-								.Text(LOCTEXT("OptionHeader", "Tile Options"))
-								.Font(StandardFont)
-							]
-						]
-
-						//
-						+ SVerticalBox::Slot()
-						.AutoHeight()
-						[
-							SNew(SHorizontalBox)
-							.ToolTipText(LOCTEXT("GridMapActiveTileset_ToolTip", "Currently Active TileSet"))
-							.Visibility(this, &SGridMapEditorToolkitWidget::GetVisibility_PaintOptions)
-
-							+ SHorizontalBox::Slot()
-							.Padding(StandardLeftPadding)
-							.FillWidth(1.0f)
-							.VAlign(VAlign_Center)
-							[
-								SNew(STextBlock)
-								.Text(LOCTEXT("GridMapActiveTileset", "Tiles"))
-								.Font(StandardFont)
-							]
-
-							+ SHorizontalBox::Slot()
-							.Padding(StandardRightPadding)
-							.FillWidth(2.0f)
-							.MaxWidth(140.f)
-							.VAlign(VAlign_Center)
-							[
-								SNew(SContentReference)
-								.WidthOverride(140.f)
-								.AssetReference(this, &SGridMapEditorToolkitWidget::GetCurrentTileSet)
-								.OnSetReference(this, &SGridMapEditorToolkitWidget::OnChangeTileSet)
-								.AllowedClass(UGridMapTileSet::StaticClass())
-								.AllowSelectingNewAsset(true)
-								.AllowClearingReference(false)
-							]								
-						]
-
-						// Tilemap Target Height
-						+ SVerticalBox::Slot()
-						.AutoHeight()
-						[
-							SNew(SHorizontalBox)
-							.ToolTipText(LOCTEXT("GridMapPaintHeight_ToolTip", "Paint height of the gridmap"))
-							.Visibility(this, &SGridMapEditorToolkitWidget::GetVisibility_PaintOptions)
-
-							+ SHorizontalBox::Slot()
-							.Padding(StandardLeftPadding)
-							.FillWidth(1.0f)
-							.VAlign(VAlign_Center)
-							[
-								SNew(STextBlock)
-								.Text(LOCTEXT("GridMapPaintHeight", "Height"))
-								.Font(StandardFont)
-							]
-							+ SHorizontalBox::Slot()
-							.Padding(StandardRightPadding)
-							.FillWidth(2.0f)
-							.MaxWidth(100.f)
-							.VAlign(VAlign_Center)
-							[
-								SNew(SNumericEntryBox<float>)
-								.Font(StandardFont)
-								.AllowSpin(true)
-								.MinValue(-65530.0f)
-								.MaxValue(65530.0f)
-								.MaxSliderValue(1000.f)
-								.MinDesiredValueWidth(50.0f)
-								.SliderExponent(3.0f)
-								.Value(this, &SGridMapEditorToolkitWidget::GetPaintHeight)
-								.OnValueChanged(this, &SGridMapEditorToolkitWidget::SetPaintHeight)
-							]
-						]
-
-						// Hide Actors
-						+ SVerticalBox::Slot()
-						.Padding(StandardPadding)
-						.AutoHeight()
-						[
-							SNew(SHorizontalBox)
-							.Visibility(this, &SGridMapEditorToolkitWidget::GetVisibility_PaintOptions)
-
-							+ SHorizontalBox::Slot()
-							.VAlign(VAlign_Center)
-							.Padding(StandardPadding)
-							[
-								SNew(SWrapBox)
-								.UseAllottedWidth(true)
-								.InnerSlotPadding({6, 5})
-
-								+ SWrapBox::Slot()
-								[
-									SNew(SBox)
-									.MinDesiredWidth(150)
-									[
-										SNew(SCheckBox)
-										.OnCheckStateChanged(this, &SGridMapEditorToolkitWidget::OnCheckStateChanged_HideOwnedActors)
-										.IsChecked(this, &SGridMapEditorToolkitWidget::GetCheckState_HideOwnedActors)
-										.ToolTipText(LOCTEXT("GridMapHideActors_ToolTip", "Whether to hide the actors in the outliner"))
-										[
-											SNew(STextBlock)
-											.Text(LOCTEXT("GridMapHideActors", "Hide in outliner"))
-											.Font(StandardFont)
-										]
-									]
-								]
-							]
-						]
 						
-						//
+						// Paint Options
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						[
+							BuildPaintOptions()
+						]
 
 					]
 				]
@@ -241,6 +121,127 @@ TSharedRef<SWidget> SGridMapEditorToolkitWidget::BuildToolBar()
 				.IsEnabled(FSlateApplication::Get().GetNormalExecutionAttribute())
 				[
 					Toolbar.MakeWidget()
+				]
+			]
+		];
+}
+
+TSharedRef<SWidget> SGridMapEditorToolkitWidget::BuildPaintOptions()
+{
+	return 
+		SNew(SVerticalBox)
+		.Visibility(this, &SGridMapEditorToolkitWidget::GetVisibility_PaintOptions)
+		// Brush Options
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(FGridMapStyleSet::StandardPadding)
+		[
+			SNew(SHeader)
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("OptionHeader", "Tile Options"))
+				.Font(FGridMapStyleSet::StandardFont)
+			]
+		]
+
+		//
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		[
+			SNew(SHorizontalBox)
+			.ToolTipText(LOCTEXT("GridMapActiveTileset_ToolTip", "Currently Active TileSet"))
+
+			+ SHorizontalBox::Slot()
+			.Padding(FGridMapStyleSet::StandardLeftPadding)
+			.FillWidth(1.0f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("GridMapActiveTileset", "Tiles"))
+				.Font(FGridMapStyleSet::StandardFont)
+			]
+
+			+ SHorizontalBox::Slot()
+			.Padding(FGridMapStyleSet::StandardRightPadding)
+			.FillWidth(2.0f)
+			.MaxWidth(140.f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(SContentReference)
+				.WidthOverride(140.f)
+				.AssetReference(this, &SGridMapEditorToolkitWidget::GetCurrentTileSet)
+				.OnSetReference(this, &SGridMapEditorToolkitWidget::OnChangeTileSet)
+				.AllowedClass(UGridMapTileSet::StaticClass())
+				.AllowSelectingNewAsset(true)
+				.AllowClearingReference(false)
+			]								
+		]
+
+		// Tilemap Target Height
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		[
+			SNew(SHorizontalBox)
+			.ToolTipText(LOCTEXT("GridMapPaintHeight_ToolTip", "Paint height of the gridmap"))
+
+			+ SHorizontalBox::Slot()
+			.Padding(FGridMapStyleSet::StandardLeftPadding)
+			.FillWidth(1.0f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("GridMapPaintHeight", "Height"))
+				.Font(FGridMapStyleSet::StandardFont)
+			]
+			+ SHorizontalBox::Slot()
+			.Padding(FGridMapStyleSet::StandardRightPadding)
+			.FillWidth(2.0f)
+			.MaxWidth(100.f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(SNumericEntryBox<float>)
+				.Font(FGridMapStyleSet::StandardFont)
+				.AllowSpin(true)
+				.MinValue(-65530.0f)
+				.MaxValue(65530.0f)
+				.MaxSliderValue(1000.f)
+				.MinDesiredValueWidth(50.0f)
+				.SliderExponent(3.0f)
+				.Value(this, &SGridMapEditorToolkitWidget::GetPaintHeight)
+				.OnValueChanged(this, &SGridMapEditorToolkitWidget::SetPaintHeight)
+			]
+		]
+
+		// Hide Actors
+		+ SVerticalBox::Slot()
+		.Padding(FGridMapStyleSet::StandardPadding)
+		.AutoHeight()
+		[
+			SNew(SHorizontalBox)
+
+			+ SHorizontalBox::Slot()
+			.VAlign(VAlign_Center)
+			.Padding(FGridMapStyleSet::StandardPadding)
+			[
+				SNew(SWrapBox)
+				.UseAllottedWidth(true)
+				.InnerSlotPadding({6, 5})
+
+				+ SWrapBox::Slot()
+				[
+					SNew(SBox)
+					.MinDesiredWidth(150)
+					[
+						SNew(SCheckBox)
+						.OnCheckStateChanged(this, &SGridMapEditorToolkitWidget::OnCheckStateChanged_HideOwnedActors)
+						.IsChecked(this, &SGridMapEditorToolkitWidget::GetCheckState_HideOwnedActors)
+						.ToolTipText(LOCTEXT("GridMapHideActors_ToolTip", "Whether to hide the actors in the outliner"))
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("GridMapHideActors", "Hide in outliner"))
+							.Font(FGridMapStyleSet::StandardFont)
+						]
+					]
 				]
 			]
 		];

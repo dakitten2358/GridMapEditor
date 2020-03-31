@@ -15,6 +15,13 @@ class FGridMapStyleSet : public FSlateStyleSet
 	static const FVector2D Icon512x512;
 
 public:
+	static const FMargin StandardPadding;
+	static const FMargin StandardLeftPadding;
+	static const FMargin StandardRightPadding;
+
+	static const FSlateFontInfo StandardFont;
+
+public:
 	static const FName Name;
 
 public:

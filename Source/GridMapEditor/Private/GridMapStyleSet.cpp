@@ -1,4 +1,5 @@
 #include "GridMapStyleSet.h"
+#include "EditorStyleSet.h"
 
 const FName FGridMapStyleSet::Name("GridMapStyle");
 
@@ -8,6 +9,12 @@ const FVector2D FGridMapStyleSet::Icon20x20(20.0f, 20.0f);
 const FVector2D FGridMapStyleSet::Icon40x40(40.0f, 40.0f);
 const FVector2D FGridMapStyleSet::Icon64x64(64.0f, 64.0f);
 const FVector2D FGridMapStyleSet::Icon512x512(512.0f, 512.0f);
+
+const FMargin FGridMapStyleSet::StandardPadding(6.f, 3.f);
+const FMargin FGridMapStyleSet::StandardLeftPadding(6.f, 3.f, 3.f, 3.f);
+const FMargin FGridMapStyleSet::StandardRightPadding(3.f, 3.f, 6.f, 3.f);
+
+const FSlateFontInfo FGridMapStyleSet::StandardFont = FEditorStyle::GetFontStyle(TEXT("PropertyWindow.NormalFont"));
 
 FGridMapStyleSet::FGridMapStyleSet(const FString& PluginContentDir)
 	: Super(Name)
