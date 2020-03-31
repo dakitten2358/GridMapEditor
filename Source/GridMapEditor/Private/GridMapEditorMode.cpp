@@ -73,11 +73,28 @@ void FGridMapEditorMode::BindCommandList()
 		FExecuteAction::CreateRaw(this, &FGridMapEditorMode::OnSetPaintTiles),
 		FCanExecuteAction(),
 		FIsActionChecked::CreateLambda([=]
-	{
-		return UISettings.GetPaintToolSelected();
-	}));
-}
+		{
+			return UISettings.GetPaintToolSelected();
+		}));
 
+	UICommandList->MapAction(
+		Commands.SetSelectTiles,
+		FExecuteAction::CreateRaw(this, &FGridMapEditorMode::OnSetSelectTiles),
+		FCanExecuteAction(),
+		FIsActionChecked::CreateLambda([=]
+		{
+			return UISettings.GetSelectToolSelected();
+		}));
+
+	UICommandList->MapAction(
+		Commands.SetTileSettings,
+		FExecuteAction::CreateRaw(this, &FGridMapEditorMode::OnSetTileSettings),
+		FCanExecuteAction(),
+		FIsActionChecked::CreateLambda([=]
+		{
+			return UISettings.GetSettingsToolSelected();
+		}));
+}
 
 void FGridMapEditorMode::Enter()
 {
@@ -407,11 +424,30 @@ bool FGridMapEditorMode::IsSelectionAllowed(AActor* InActor, bool bInSelection) 
 	return false;
 }
 
+void FGridMapEditorMode::ClearAllToolSelection()
+{
+	UISettings.SetPaintToolSelected(false);
+	UISettings.SetSelectToolSelected(false);
+	UISettings.SetSettingsToolSelected(false);
+}
+
 void FGridMapEditorMode::OnSetPaintTiles()
 {
-	//ClearAllToolSelection();
+	ClearAllToolSelection();
 	UISettings.SetPaintToolSelected(true);
 	//HandleToolChanged();
+}
+
+void FGridMapEditorMode::OnSetSelectTiles()
+{
+	ClearAllToolSelection();
+	UISettings.SetSelectToolSelected(true);
+}
+
+void FGridMapEditorMode::OnSetTileSettings()
+{
+	ClearAllToolSelection();
+	UISettings.SetSettingsToolSelected(true);
 }
 
 EGridMapEditingState FGridMapEditorMode::GetEditingState() const

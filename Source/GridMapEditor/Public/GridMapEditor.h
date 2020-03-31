@@ -15,9 +15,6 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-public:
-	static const FName StyleSetName;
-
 private:
 	void RegisterAssetTypeAction(class IAssetTools& AssetTools, TSharedRef<class IAssetTypeActions> Action);
 	void RegisterCustomPropertyTypeLayout(FName PropertyTypeName, FOnGetPropertyTypeCustomizationInstance PropertyTypeLayoutDelegate);

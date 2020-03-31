@@ -24,6 +24,8 @@ private:	// construction helpers
 private:
 	bool IsGridMapEditorEnabled() const;
 	bool IsPaintTool() const;
+	bool IsSelectTool() const;
+	bool IsSettingsTool() const;
 
 	FText GetActiveToolName() const;
 	FText GetGridMapEditorErrorText() const;
@@ -40,6 +42,8 @@ private:
 	
 	// helper for visibilities
 	EVisibility GetVisibility_PaintOptions() const;
+	EVisibility GetVisibility_SelectOptions() const;
+	EVisibility GetVisibility_SettingsOptions() const;
 
 private:
 

@@ -5,37 +5,20 @@
 #include "GridMapEditCommands.h"
 #include "GridMapEditorMode.h"
 #include "GridMapTileSetAssetTypeActions.h"
+#include "GridMapStyleSet.h"
 #include "Interfaces/IPluginManager.h"
 #include "PropertyEditorModule.h"
-#include "Styling/SlateStyle.h"
 #include "Styling/SlateStyleRegistry.h"
 #include "TileBitsetCustomization.h"
 
 #define LOCTEXT_NAMESPACE "FGridMapEditorModule"
-
-const FName FGridMapEditorModule::StyleSetName("GridMapStyle");
-
-const FVector2D Icon14x14(14.0f, 14.0f);
-const FVector2D Icon16x16(16.0f, 16.0f);
-const FVector2D Icon20x20(20.0f, 20.0f);
-const FVector2D Icon40x40(40.0f, 40.0f);
-const FVector2D Icon64x64(64.0f, 64.0f);
-const FVector2D Icon512x512(512.0f, 512.0f);
 
 // This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 void FGridMapEditorModule::StartupModule()
 {
 	// Icons
 	FString ContentDir = IPluginManager::Get().FindPlugin(TEXT("GridMapEditor"))->GetContentDir() + "/";
-	StyleSet = MakeShareable(new FSlateStyleSet(StyleSetName));
-	StyleSet->SetContentRoot(FPaths::EngineContentDir() / TEXT("Editor/Slate"));
-	StyleSet->SetCoreContentRoot(FPaths::EngineContentDir() / TEXT("Slate"));
-
-	StyleSet->Set("GridMapEditor.Tab", new FSlateImageBrush(ContentDir + TEXT("Icons/UIIcons/mode_40.png"), Icon40x40));
-	StyleSet->Set("GridMapEditor.Tab.Small", new FSlateImageBrush(ContentDir + TEXT("Icons/UIIcons/mode_40.png"), Icon16x16));
-
-	StyleSet->Set("GridMapEditCommands.PaintTiles", new FSlateImageBrush(ContentDir + TEXT("Icons/UIIcons/paint_40.png"), Icon20x20));
-
+	StyleSet = MakeShareable(new FGridMapStyleSet(ContentDir));
 	FSlateStyleRegistry::RegisterSlateStyle(*StyleSet.Get());
 
 	// Property Customization

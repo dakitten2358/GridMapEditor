@@ -13,10 +13,12 @@ public:
 	 */
 
 	/** Commands for the tools toolbar. */
-	TSharedPtr< FUICommandInfo > SetPaintTiles;
+	TSharedPtr<FUICommandInfo> SetPaintTiles;
+	TSharedPtr<FUICommandInfo> SetSelectTiles;
+	TSharedPtr<FUICommandInfo> SetTileSettings;
+
 	/*
-	TSharedPtr< FUICommandInfo > SetReapplySettings;
-	TSharedPtr< FUICommandInfo > SetSelect;
+	TSharedPtr< FUICommandInfo > SetReapplySettings;	
 	TSharedPtr< FUICommandInfo > SetLassoSelect;
 	TSharedPtr< FUICommandInfo > SetPaintBucket;
 	*/

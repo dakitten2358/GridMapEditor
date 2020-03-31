@@ -1,6 +1,6 @@
 #include "GridMapEditCommands.h"
-#include "EditorStyleSet.h"
 #include "GridMapEditor.h"
+#include "GridMapStyleSet.h"
 
 #define LOCTEXT_NAMESPACE "GridMapEditor"
 
@@ -9,13 +9,15 @@ FGridMapEditCommands::FGridMapEditCommands()
 		"GridMapEditCommands",	// context name for fast lookup
 		NSLOCTEXT("GridMapEditor", "GridMapEditorMode", "Grid Map Edit Mode"), // localized text
 		NAME_None,	// parent
-		FGridMapEditorModule::StyleSetName)
+		FGridMapStyleSet::Name)
 {
 }
 
 void FGridMapEditCommands::RegisterCommands()
 {
 	MakeUICommand(SetPaintTiles, TEXT("PaintTiles"), LOCTEXT("Paint", "Paint"), LOCTEXT("PaintDescription", "Paint Tiles"), EUserInterfaceActionType::ToggleButton);
+	MakeUICommand(SetSelectTiles, TEXT("SelectTiles"), LOCTEXT("Select", "Select"), LOCTEXT("SelectDescription", "Select Tiles"), EUserInterfaceActionType::ToggleButton);
+	MakeUICommand(SetTileSettings, TEXT("TileSettings"), LOCTEXT("Settings", "Settings"), LOCTEXT("SettingDescription", "Configuration"), EUserInterfaceActionType::ToggleButton);
 	/*
 	UI_COMMAND(SetReapplySettings, "Reapply", "Reapply settings to instances", EUserInterfaceActionType::ToggleButton, FInputChord());
 	UI_COMMAND(SetSelect, "Select", "Select", EUserInterfaceActionType::ToggleButton, FInputChord());

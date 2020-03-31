@@ -217,9 +217,11 @@ TSharedRef<SWidget> SGridMapEditorToolkitWidget::BuildToolBar()
 	Toolbar.SetStyle(&FEditorStyle::Get(), "FoliageEditToolbar");
 	{
 		Toolbar.AddToolBarButton(FGridMapEditCommands::Get().SetPaintTiles);
+		Toolbar.AddToolBarButton(FGridMapEditCommands::Get().SetSelectTiles);
+		Toolbar.AddToolBarButton(FGridMapEditCommands::Get().SetTileSettings);
+		
 		/*
 		Toolbar.AddToolBarButton(FFoliageEditCommands::Get().SetReapplySettings);
-		Toolbar.AddToolBarButton(FFoliageEditCommands::Get().SetSelect);
 		Toolbar.AddToolBarButton(FFoliageEditCommands::Get().SetLassoSelect);
 		Toolbar.AddToolBarButton(FFoliageEditCommands::Get().SetPaintBucket);
 		*/
@@ -253,6 +255,16 @@ bool SGridMapEditorToolkitWidget::IsGridMapEditorEnabled() const
 bool SGridMapEditorToolkitWidget::IsPaintTool() const
 {
 	return GridMapEditorMode->UISettings.GetPaintToolSelected();
+}
+
+bool SGridMapEditorToolkitWidget::IsSelectTool() const
+{
+	return GridMapEditorMode->UISettings.GetSelectToolSelected();
+}
+
+bool SGridMapEditorToolkitWidget::IsSettingsTool() const
+{
+	return GridMapEditorMode->UISettings.GetSettingsToolSelected();
 }
 
 void SGridMapEditorToolkitWidget::SetPaintHeight(float InHeight)
@@ -292,20 +304,25 @@ ECheckBoxState SGridMapEditorToolkitWidget::GetCheckState_HideOwnedActors() cons
 
 FText SGridMapEditorToolkitWidget::GetActiveToolName() const
 {
-	FText OutText;
+	const FGridMapEditCommands& Commands = FGridMapEditCommands::Get();
 	if (IsPaintTool())
 	{
-		OutText = LOCTEXT("FoliageToolName_Paint", "Paint");
+		return Commands.SetPaintTiles->GetLabel();
+	}
+	else if (IsSelectTool())
+	{
+		return Commands.SetSelectTiles->GetLabel();
+	}
+	else if (IsSettingsTool())
+	{
+		return Commands.SetTileSettings->GetLabel();
 	}
 	/*
 	else if (IsReapplySettingsTool())
 	{
 		OutText = LOCTEXT("FoliageToolName_Reapply", "Reapply");
 	}
-	else if (IsSelectTool())
-	{
-		OutText = LOCTEXT("FoliageToolName_Select", "Select");
-	}
+	
 	else if (IsLassoSelectTool())
 	{
 		OutText = LOCTEXT("FoliageToolName_LassoSelect", "Lasso Select");
@@ -316,7 +333,7 @@ FText SGridMapEditorToolkitWidget::GetActiveToolName() const
 	}
 	*/
 
-	return OutText;
+	return FText::GetEmpty();
 }
 
 FText SGridMapEditorToolkitWidget::GetGridMapEditorErrorText() const
@@ -337,6 +354,26 @@ FText SGridMapEditorToolkitWidget::GetGridMapEditorErrorText() const
 EVisibility SGridMapEditorToolkitWidget::GetVisibility_PaintOptions() const
 {
 	if (IsPaintTool())
+	{
+		return EVisibility::Visible;
+	}
+
+	return EVisibility::Collapsed;
+}
+
+EVisibility SGridMapEditorToolkitWidget::GetVisibility_SelectOptions() const
+{
+	if (IsSelectTool())
+	{
+		return EVisibility::Visible;
+	}
+
+	return EVisibility::Collapsed;
+}
+
+EVisibility SGridMapEditorToolkitWidget::GetVisibility_SettingsOptions() const
+{
+	if (IsSettingsTool())
 	{
 		return EVisibility::Visible;
 	}

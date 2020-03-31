@@ -50,7 +50,10 @@ public:
 
 private:
 	void BindCommandList();
+	void ClearAllToolSelection();
 	void OnSetPaintTiles();
+	void OnSetSelectTiles();
+	void OnSetTileSettings();
 
 	void GridMapBrushTrace(FEditorViewportClient* ViewportClient, const FVector& InRayOrigin, const FVector& InRayDirection);
 	
