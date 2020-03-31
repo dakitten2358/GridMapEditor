@@ -27,7 +27,7 @@ FName FGridMapEditorModeToolkit::GetToolkitFName() const
 
 FText FGridMapEditorModeToolkit::GetBaseToolkitName() const
 {
-	return NSLOCTEXT("GridMapEditorEdModeToolkit", "DisplayName", "GridMapEditorEdMode Tool");
+	return LOCTEXT("GridMapEditorToolkitName", "Grid Map Editor Toolkit");
 }
 
 class FEdMode* FGridMapEditorModeToolkit::GetEditorMode() const

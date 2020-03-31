@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Layout/Visibility.h"
 #include "Toolkits/BaseToolkit.h"
 
 class FGridMapEditorModeToolkit : public FModeToolkit
@@ -21,6 +22,5 @@ public:
 	virtual TSharedPtr<class SWidget> GetInlineContent() const override;
 
 private:
-
 	TSharedPtr<class SGridMapEditorToolkitWidget> ToolkitWidget;
 };

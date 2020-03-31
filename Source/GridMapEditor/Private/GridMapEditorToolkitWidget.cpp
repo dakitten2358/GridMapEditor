@@ -7,6 +7,7 @@
 #include "GridMapStyleSet.h"
 #include "SlateOptMacros.h"
 #include "TileSet.h"
+#include "Widgets/GridMapEditorSettingsWidget.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SNumericEntryBox.h"
 #include "Widgets/Layout/SHeader.h"
@@ -80,6 +81,13 @@ void SGridMapEditorToolkitWidget::Construct(const FArguments& InArgs)
 						.AutoHeight()
 						[
 							BuildPaintOptions()
+						]
+
+						// Settings Options
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						[
+							SNew(SGridMapEditorSettingsWidget, &GridMapEditorMode->UISettings)
 						]
 
 					]

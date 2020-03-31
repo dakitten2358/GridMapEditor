@@ -24,7 +24,6 @@ const FEditorModeID FGridMapEditorMode::EM_GridMapEditorModeId = TEXT("EM_GridMa
 
 FGridMapEditorMode::FGridMapEditorMode()
 	: FEdMode()
-	, bIsDrawingDebug(true)
 {
 	BrushDefaultHighlightColor = FColor(127, 127, 255, 255);
 	BrushWarningHighlightColor = FColor::Red;
@@ -563,9 +562,9 @@ void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, const TArray<FAdjace
 		if (CurrentStaticMesh == ExpectedStaticMesh)
 			continue;
 
-		if (bIsDrawingDebug)
+		if (UISettings.GetDebugDrawTiles())
 		{
-			DrawDebugPoint(GetWorld(), CurrentActor->GetActorLocation(), 10.f, FColor::Yellow, false, 5.0f, 0);
+			DrawDebugPoint(GetWorld(), CurrentActor->GetActorLocation(), 10.f, FColor::Yellow, false, 5.0f, 255);
 		}
 
 		// it has changed, so let's update it

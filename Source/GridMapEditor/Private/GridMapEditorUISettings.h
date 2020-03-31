@@ -30,6 +30,9 @@ public:
 	TWeakObjectPtr<class UGridMapTileSet> GetCurrentTileSet() const { return CurrentTileSetPtr; }
 	void SetCurrentTileSet(class UGridMapTileSet* NewTileSet) { CurrentTileSetPtr = NewTileSet; }
 
+	bool GetDebugDrawTiles() const { return bDebugDrawUpdatedTiles; }
+	void SetDebugDrawTiles(bool bInDebugDrawUpdatedTiles) { bDebugDrawUpdatedTiles = bInDebugDrawUpdatedTiles; }
+
 private:
 	bool bPaintToolSelected;
 	bool bSelectToolSelected;
@@ -38,6 +41,8 @@ private:
 	float PaintHeight;
 	EGridMapPaintMode PaintMode;
 	bool bHideOwnedActors;
+
+	bool bDebugDrawUpdatedTiles;
 
 	TWeakObjectPtr<class UGridMapTileSet> CurrentTileSetPtr;
 	

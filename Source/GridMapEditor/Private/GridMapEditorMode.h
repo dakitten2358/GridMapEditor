@@ -84,7 +84,6 @@ public:
 	
 private:
 	bool bIsPainting;
-	bool bIsDrawingDebug;
 
 	bool bBrushTraceValid;
 	FVector BrushLocation;
