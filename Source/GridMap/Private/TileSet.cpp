@@ -3,6 +3,12 @@
 
 #include "TileSet.h"
 
+UGridMapTileSet::UGridMapTileSet()
+	: TileSize(100)
+	, TileHeight(200)
+{
+}
+
 TAssetPtr<class UStaticMesh> FGridMapTileList::GetRandomTile() const
 {
 	if (Tiles.Num() == 0)

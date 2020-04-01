@@ -10,7 +10,7 @@
 class FGridMapEditorMode : public FEdMode
 {
 protected:
-	typedef TPair<class AStaticMeshActor*, uint32> FAdjacentTile;
+	typedef TPair<class AGridMapStaticMeshActor*, uint32> FAdjacentTile;
 
 public:
 	const static FEditorModeID EM_GridMapEditorModeId;
@@ -63,15 +63,15 @@ private:
 	FVector SnapLocation(const FVector& InLocation);
 
 	void PaintTile();
-	void EraseTile(class AStaticMeshActor* TileToErase, const FName& Tag);
+	void EraseTile(class AGridMapStaticMeshActor* TileToErase, const FName& Tag);
 
 	uint32 GetTileAdjacencyBitmask(class UWorld* World, const FVector& Origin, FName Tag) const;
 	
-	bool TilesAt(class UWorld* World, const FVector& Origin, TArray<class AStaticMeshActor*>& OutTiles) const;
-	class AStaticMeshActor* MatchingTileAt(class UWorld* World, const FVector& Origin, FName Tag) const;
+	bool TilesAt(class UWorld* World, const FVector& Origin, TArray<class AGridMapStaticMeshActor*>& OutTiles) const;
+	class AGridMapStaticMeshActor* MatchingTileAt(class UWorld* World, const FVector& Origin, FName Tag) const;
 	bool IsMatchingTilePresentAt(class UWorld* World, const FVector& Origin, FName Tag) const;
 
-	bool GetAdjacentTiles(class UWorld* World, const FVector& Origin, TArray<TPair<class AStaticMeshActor*, uint32>>& OutAdjacentTiles) const;
+	bool GetAdjacentTiles(class UWorld* World, const FVector& Origin, TArray<TPair<class AGridMapStaticMeshActor*, uint32>>& OutAdjacentTiles) const;
 	
 	void UpdateAdjacentTiles(class UWorld* World, const TArray<FAdjacentTile>& RootActors, const FName& Tag);
 

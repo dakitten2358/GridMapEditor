@@ -41,10 +41,18 @@ UCLASS(BlueprintType)
 class GRIDMAP_API UGridMapTileSet : public UObject
 {
 	GENERATED_BODY()
+public:
+	UGridMapTileSet();
 	
 public:
-	UPROPERTY(EditAnywhere )
+	UPROPERTY(EditAnywhere)
 	FName Name;
+
+	UPROPERTY(EditAnywhere)
+	uint32 TileSize;
+
+	UPROPERTY(EditAnywhere)
+	uint32 TileHeight;
 
 	UPROPERTY(EditAnywhere)
 	TArray<FGridMapTileList> Tiles;
