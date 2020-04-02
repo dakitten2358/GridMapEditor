@@ -63,17 +63,12 @@ private:
 	FVector SnapLocation(const FVector& InLocation);
 
 	void PaintTile();
-	void EraseTile(class AGridMapStaticMeshActor* TileToErase, const FName& Tag);
+	void EraseTile(class AGridMapStaticMeshActor* TileToErase);
 
-	uint32 GetTileAdjacencyBitmask(class UWorld* World, const FVector& Origin, FName Tag) const;
-	
+	uint32 GetTileAdjacencyBitmask(class UWorld* World, const FVector& Origin, FName TileSetName) const;
 	bool TilesAt(class UWorld* World, const FVector& Origin, TArray<class AGridMapStaticMeshActor*>& OutTiles) const;
-	class AGridMapStaticMeshActor* MatchingTileAt(class UWorld* World, const FVector& Origin, FName Tag) const;
-	bool IsMatchingTilePresentAt(class UWorld* World, const FVector& Origin, FName Tag) const;
-
 	bool GetAdjacentTiles(class UWorld* World, const FVector& Origin, TArray<TPair<class AGridMapStaticMeshActor*, uint32>>& OutAdjacentTiles) const;
-	
-	void UpdateAdjacentTiles(class UWorld* World, const TArray<FAdjacentTile>& RootActors, const FName& Tag);
+	void UpdateAdjacentTiles(class UWorld* World, const TArray<FAdjacentTile>& RootActors);
 
 
 public:

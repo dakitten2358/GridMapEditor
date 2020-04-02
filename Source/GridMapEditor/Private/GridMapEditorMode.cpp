@@ -247,7 +247,7 @@ void FGridMapEditorMode::PaintTile()
 		// and we're on top of something?
 		if (BrushTraceHitActor.IsValid() && Cast<AGridMapStaticMeshActor>(BrushTraceHitActor.Get()))
 		{
-			EraseTile(Cast<AGridMapStaticMeshActor>(BrushTraceHitActor.Get()), UISettings.GetCurrentTileSet()->Name);
+			EraseTile(Cast<AGridMapStaticMeshActor>(BrushTraceHitActor.Get()));
 			BrushTraceHitActor.Reset();
 		}
 		return;
@@ -258,55 +258,49 @@ void FGridMapEditorMode::PaintTile()
 	{
 		UGridMapTileSet* TileSet = UISettings.GetCurrentTileSet().Get();
 
-		// empty spot?
-		if (!BrushTraceHitActor.IsValid())
-		{
-			// figure out the bitmask for this tile
-			uint32 Adjacency = GetTileAdjacencyBitmask(GetWorld(), BrushLocation, TileSet->Name);
-			const FGridMapTileList* TileList = TileSet->FindTilesForAdjacency(Adjacency);
-			if (TileList)
-			{
-				TAssetPtr<UStaticMesh> StaticMeshAsset = TileList->GetRandomTile();
-
-				FActorSpawnParameters SpawnParameters;
-				if (UISettings.GetHideOwnedActors())
-				{
-					SpawnParameters.bHideFromSceneOutliner = true;
-				}
-				AGridMapStaticMeshActor* MeshActor = GetWorld()->SpawnActor<AGridMapStaticMeshActor>(AGridMapStaticMeshActor::StaticClass(), SpawnParameters);
-				MeshActor->TileSet = TileSet;
-
-				// Rename the display name of the new actor in the editor to reflect the mesh that is being created from.
-				FActorLabelUtilities::SetActorLabelUnique(MeshActor, TEXT("ActorLabelUnique"));
-
-				UStaticMesh* StaticMesh = Cast<UStaticMesh>(StaticMeshAsset.LoadSynchronous());
-				MeshActor->GetStaticMeshComponent()->SetStaticMesh(StaticMesh);
-				MeshActor->ReregisterAllComponents();
-
-				FTransform BrushTransform = FTransform(TileList->Rotation.Quaternion(), BrushLocation, FVector::OneVector);
-				MeshActor->SetActorTransform(BrushTransform);
-
-				// update adjacent tiles
-				TArray<FAdjacentTile> AdjacentTiles;
-				if (GetAdjacentTiles(GetWorld(), BrushLocation, AdjacentTiles))
-				{
-					UpdateAdjacentTiles(GetWorld(), AdjacentTiles, TileSet->Name);
-				}
-				
-
-				// Switch to another mesh from the list
-				//ResetBrushMesh();
-			}
-		}
 		// we're about to replace an actor
-		else
+		if (BrushTraceHitActor.IsValid())
 		{
+			EraseTile(Cast<AGridMapStaticMeshActor>(BrushTraceHitActor.Get()));
+			BrushTraceHitActor.Reset();
+		}
+		
+		// figure out the bitmask for this tile
+		uint32 Adjacency = GetTileAdjacencyBitmask(GetWorld(), BrushLocation, TileSet->Name);
+		const FGridMapTileList* TileList = TileSet->FindTilesForAdjacency(Adjacency);
+		if (TileList)
+		{
+			TAssetPtr<UStaticMesh> StaticMeshAsset = TileList->GetRandomTile();
 
+			FActorSpawnParameters SpawnParameters;
+			if (UISettings.GetHideOwnedActors())
+			{
+				SpawnParameters.bHideFromSceneOutliner = true;
+			}
+			AGridMapStaticMeshActor* MeshActor = GetWorld()->SpawnActor<AGridMapStaticMeshActor>(AGridMapStaticMeshActor::StaticClass(), SpawnParameters);
+			MeshActor->TileSet = TileSet;
+
+			// Rename the display name of the new actor in the editor to reflect the mesh that is being created from.
+			FActorLabelUtilities::SetActorLabelUnique(MeshActor, TEXT("ActorLabelUnique"));
+
+			UStaticMesh* StaticMesh = Cast<UStaticMesh>(StaticMeshAsset.LoadSynchronous());
+			MeshActor->GetStaticMeshComponent()->SetStaticMesh(StaticMesh);
+			MeshActor->ReregisterAllComponents();
+
+			FTransform BrushTransform = FTransform(TileList->Rotation.Quaternion(), BrushLocation, FVector::OneVector);
+			MeshActor->SetActorTransform(BrushTransform);
+
+			// update adjacent tiles
+			TArray<FAdjacentTile> AdjacentTiles;
+			if (GetAdjacentTiles(GetWorld(), BrushLocation, AdjacentTiles))
+			{
+				UpdateAdjacentTiles(GetWorld(), AdjacentTiles);
+			}
 		}
 	}
 }
 
-void FGridMapEditorMode::EraseTile(AGridMapStaticMeshActor* TileToErase, const FName& Tag)
+void FGridMapEditorMode::EraseTile(AGridMapStaticMeshActor* TileToErase)
 {
 	TArray<FAdjacentTile> AdjacentTiles;
 	bool hasAdjacentTiles = GetAdjacentTiles(GetWorld(), TileToErase->GetActorLocation(), AdjacentTiles);
@@ -315,7 +309,7 @@ void FGridMapEditorMode::EraseTile(AGridMapStaticMeshActor* TileToErase, const F
 
 	if (hasAdjacentTiles)
 	{
-		UpdateAdjacentTiles(GetWorld(), AdjacentTiles, Tag);
+		UpdateAdjacentTiles(GetWorld(), AdjacentTiles);
 	}
 }
 
@@ -466,7 +460,7 @@ EGridMapEditingState FGridMapEditorMode::GetEditingState() const
 	return EGridMapEditingState::Enabled;
 }
 
-uint32 FGridMapEditorMode::GetTileAdjacencyBitmask(UWorld* World, const FVector& Origin, FName Tag) const
+uint32 FGridMapEditorMode::GetTileAdjacencyBitmask(UWorld* World, const FVector& Origin, FName TileSetName) const
 {
 	uint32 bitmask = 0;
 
@@ -475,7 +469,7 @@ uint32 FGridMapEditorMode::GetTileAdjacencyBitmask(UWorld* World, const FVector&
 	{
 		for (const FAdjacentTile& AdjacentTile : AdjacentTiles)
 		{
-			if (AdjacentTile.Key->TileSet->Name == Tag)
+			if (AdjacentTile.Key->TileSet->Name == TileSetName)
 				bitmask |= AdjacentTile.Value;
 		}
 	}
@@ -502,29 +496,7 @@ bool FGridMapEditorMode::TilesAt(UWorld* World, const FVector& Origin, TArray<AG
 	return OutTiles.Num() > 0;
 }
 
-AGridMapStaticMeshActor* FGridMapEditorMode::MatchingTileAt(class UWorld* World, const FVector& Origin, FName Tag) const
-{
-	TArray<AGridMapStaticMeshActor*> OutTiles;
-	TilesAt(World, Origin, OutTiles);
-
-	for (AGridMapStaticMeshActor* OutTile : OutTiles)
-	{
-		if (OutTile->Tags.Contains(Tag))
-			return OutTile;
-	}
-
-	return nullptr;
-}
-
-bool FGridMapEditorMode::IsMatchingTilePresentAt(UWorld* World, const FVector& Origin, FName Tag) const
-{
-	AGridMapStaticMeshActor* StaticMeshActor = MatchingTileAt(World, Origin, Tag);
-	if (StaticMeshActor)
-		return true;
-	return false;
-}
-
-void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, const TArray<FAdjacentTile>& RootActors, const FName& Tag)
+void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, const TArray<FAdjacentTile>& RootActors)
 {
 	TArray<FAdjacentTile> AdjacentTiles;
 	TArray<AGridMapStaticMeshActor*> ProcessedActors;
