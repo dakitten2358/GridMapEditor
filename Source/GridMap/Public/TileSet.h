@@ -58,4 +58,10 @@ public:
 	TArray<FGridMapTileList> Tiles;
 
 	const FGridMapTileList* FindTilesForAdjacency(uint32 bitmask) const;
+
+public:
+#if WITH_EDITOR
+	UPROPERTY(Transient)
+	class UStaticMesh* MeshForIcon;
+#endif
 };

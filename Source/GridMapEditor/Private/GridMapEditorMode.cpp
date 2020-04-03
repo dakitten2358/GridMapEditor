@@ -258,6 +258,14 @@ void FGridMapEditorMode::PaintTile()
 	{
 		UGridMapTileSet* TileSet = UISettings.GetCurrentTileSet().Get();
 
+		// if it's the same tile set, don't do anything
+		if (BrushTraceHitActor.IsValid())
+		{
+			AGridMapStaticMeshActor* BrushTraceHitTile = Cast<AGridMapStaticMeshActor>(BrushTraceHitActor.Get());
+			if (BrushTraceHitTile && BrushTraceHitTile->TileSet->Name == TileSet->Name)
+				return;
+		}
+
 		// we're about to replace an actor
 		if (BrushTraceHitActor.IsValid())
 		{
@@ -597,4 +605,35 @@ int32 FGridMapEditorMode::GetTileSize() const
 float FGridMapEditorMode::GetTileCheckRadius() const
 {
 	return GetTileSize() / 3.0f;
+}
+
+void FGridMapEditorMode::AddActiveTileSet(UGridMapTileSet* TileSet)
+{
+	// don't add duplicates
+	for (const UGridMapTileSet* ExistingTileSet : ActiveTileSets)
+	{
+		if (ExistingTileSet->GetName() == TileSet->GetName())
+			return;
+	}
+
+	ActiveTileSets.Add(TileSet);
+}
+
+const TArray<UGridMapTileSet*>& FGridMapEditorMode::GetActiveTileSets() const
+{
+	return ActiveTileSets;
+}
+
+void FGridMapEditorMode::SetActiveTileSet(UGridMapTileSet* TileSet)
+{
+	ActiveTileSet = TileSet;
+	for (UGridMapTileSet* ExistingTileSet : ActiveTileSets)
+	{
+		if (ExistingTileSet->GetName() == TileSet->GetName())
+		{
+			ActiveTileSet = ExistingTileSet;
+		}
+	}
+
+	UISettings.SetCurrentTileSet(ActiveTileSet);
 }

@@ -9,7 +9,10 @@
 #include "Interfaces/IPluginManager.h"
 #include "PropertyEditorModule.h"
 #include "Styling/SlateStyleRegistry.h"
+#include "ThumbnailRendering/ThumbnailManager.h"
 #include "TileBitsetCustomization.h"
+#include "TileSet.h"
+#include "TileSet_ThumbnailRenderer.h"
 
 #define LOCTEXT_NAMESPACE "FGridMapEditorModule"
 
@@ -23,6 +26,9 @@ void FGridMapEditorModule::StartupModule()
 
 	// Property Customization
 	RegisterCustomPropertyTypeLayout("GridMapTileBitset", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FTileBitsetCustomization::MakeInstance));
+
+	// Custom thumbnail renderes
+	UThumbnailManager::Get().RegisterCustomRenderer(UGridMapTileSet::StaticClass(), UTileSet_ThumbnailRenderer::StaticClass());
 
 	// Register asset types
 	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();

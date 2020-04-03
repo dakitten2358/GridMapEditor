@@ -22,6 +22,8 @@ private:	// construction helpers
 	TSharedRef<SWidget> BuildToolBar();
 	TSharedRef<SWidget> BuildPaintOptions();
 
+	TSharedPtr<class STileSetPalette> TileSetPalette;
+
 private:
 	bool IsGridMapEditorEnabled() const;
 	bool IsPaintTool() const;

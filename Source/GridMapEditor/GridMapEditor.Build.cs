@@ -49,6 +49,7 @@ public class GridMapEditor : ModuleRules
                 "ToolMenus",
                 "ContentBrowser",
                 "AssetTools",
+                "PropertyEditor",
             }
 			);
 		

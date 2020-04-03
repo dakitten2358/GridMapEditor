@@ -48,6 +48,10 @@ public:
 		return GetEditingState() == EGridMapEditingState::Enabled;
 	}
 
+	void AddActiveTileSet(class UGridMapTileSet* TileSet);
+	const TArray<class UGridMapTileSet*>& GetActiveTileSets() const;
+	void SetActiveTileSet(class UGridMapTileSet* TileSet);
+
 private:
 	void BindCommandList();
 	void ClearAllToolSelection();
@@ -70,7 +74,6 @@ private:
 	bool GetAdjacentTiles(class UWorld* World, const FVector& Origin, TArray<TPair<class AGridMapStaticMeshActor*, uint32>>& OutAdjacentTiles) const;
 	void UpdateAdjacentTiles(class UWorld* World, const TArray<FAdjacentTile>& RootActors);
 
-
 public:
 	FGridMapEditorUISettings UISettings;
 
@@ -91,6 +94,9 @@ private:
 	FColor BrushWarningHighlightColor;
 	FColor BrushCurrentHighlightColor;
 
-
-
+	UPROPERTY()
+	TArray<class UGridMapTileSet*> ActiveTileSets;
+	
+	UPROPERTY()
+	class UGridMapTileSet* ActiveTileSet;
 };

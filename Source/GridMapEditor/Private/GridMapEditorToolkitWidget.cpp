@@ -13,6 +13,7 @@
 #include "Widgets/Layout/SHeader.h"
 #include "Widgets/Layout/SWrapBox.h"
 #include "Widgets/Notifications/SErrorText.h"
+#include "Widgets/STileSetPalette.h"
 #include "WorkflowOrientedApp/SContentReference.h"
 
 #define LOCTEXT_NAMESPACE "GridMapEditor"
@@ -92,6 +93,16 @@ void SGridMapEditorToolkitWidget::Construct(const FArguments& InArgs)
 
 					]
 				]
+			]
+
+			// Foliage Palette
+			+ SVerticalBox::Slot()
+			.FillHeight(1.f)
+			.VAlign(VAlign_Fill)
+			.Padding(0.f, 5.f, 0.f, 0.f)
+			[
+				SAssignNew(TileSetPalette, STileSetPalette)
+				.GridMapEditorMode(GridMapEditorMode)
 			]
 		]
 	];
