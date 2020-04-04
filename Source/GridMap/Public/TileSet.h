@@ -60,8 +60,9 @@ public:
 	const FGridMapTileList* FindTilesForAdjacency(uint32 bitmask) const;
 
 public:
-#if WITH_EDITOR
+	//this can't be here, it breaks non-editor builds :/
+//#if WITH_EDITOR
 	UPROPERTY(Transient)
 	class UStaticMesh* MeshForIcon;
-#endif
+//#endif
 };

@@ -1,6 +1,8 @@
 #include "Widgets/GridMapEditorSettingsWidget.h"
+#include "GridMapEditorMode.h"
 #include "GridMapEditorUISettings.h"
 #include "GridMapStyleSet.h"
+#include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SHeader.h"
@@ -9,13 +11,44 @@
 
 #define LOCTEXT_NAMESPACE "GridMapEditor"
 
-void SGridMapEditorSettingsWidget::Construct(const FArguments& InArgs, FGridMapEditorUISettings* GridMapUISettings)
+void SGridMapEditorSettingsWidget::Construct(const FArguments& InArgs, FGridMapEditorUISettings* GridMapUISettings, FGridMapEditorMode* GridMapEditorMode)
 {
 	UISettings = GridMapUISettings;
+	EditorMode = GridMapEditorMode;
 
 	ChildSlot[
 		SNew(SVerticalBox)
 		.Visibility(this, &SGridMapEditorSettingsWidget::GetVisibility_SettingsTab)
+		// Build Options
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(FGridMapStyleSet::StandardPadding)
+		[
+			SNew(SHeader)
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("ActionsOptionHeader", "Actions"))
+				.Font(FGridMapStyleSet::StandardFont)
+			]
+		]
+		// Debug Options
+		// Build all
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(FGridMapStyleSet::StandardPadding)
+		[
+			SNew(SBox)
+			.WidthOverride(100.f)
+			.HeightOverride(20.f)
+			[
+				SNew(SButton)
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				.OnClicked(this, &SGridMapEditorSettingsWidget::OnRebuildAllTiles)
+				.Text(LOCTEXT("RebuildAllTiles", "Build All Tiles"))
+				.ToolTipText(LOCTEXT("Rebuild All Tiles", "Recalculates adjacency for all tiles and select the correct mesh"))
+			]
+		]
 		// Debug Options
 		+ SVerticalBox::Slot()
 		.AutoHeight()
@@ -87,6 +120,12 @@ ECheckBoxState SGridMapEditorSettingsWidget::GetCheckState_DrawUpdatedTiles() co
 		return ECheckBoxState::Checked;
 
 	return ECheckBoxState::Unchecked;
+}
+
+FReply SGridMapEditorSettingsWidget::OnRebuildAllTiles()
+{
+	EditorMode->UpdateAllTiles();
+	return FReply::Handled();
 }
 
 

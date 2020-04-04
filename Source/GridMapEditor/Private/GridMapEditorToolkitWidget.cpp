@@ -88,7 +88,7 @@ void SGridMapEditorToolkitWidget::Construct(const FArguments& InArgs)
 						+ SVerticalBox::Slot()
 						.AutoHeight()
 						[
-							SNew(SGridMapEditorSettingsWidget, &GridMapEditorMode->UISettings)
+							SNew(SGridMapEditorSettingsWidget, &GridMapEditorMode->UISettings, GridMapEditorMode)
 						]
 
 					]
@@ -212,6 +212,7 @@ TSharedRef<SWidget> SGridMapEditorToolkitWidget::BuildPaintOptions()
 				.Text(LOCTEXT("GridMapPaintHeight", "Height"))
 				.Font(FGridMapStyleSet::StandardFont)
 			]
+#if false // temp
 			+ SHorizontalBox::Slot()
 			.Padding(FGridMapStyleSet::StandardRightPadding)
 			.FillWidth(2.0f)
@@ -229,6 +230,7 @@ TSharedRef<SWidget> SGridMapEditorToolkitWidget::BuildPaintOptions()
 				.Value(this, &SGridMapEditorToolkitWidget::GetPaintHeight)
 				.OnValueChanged(this, &SGridMapEditorToolkitWidget::SetPaintHeight)
 			]
+#endif
 		]
 
 		// Hide Actors
@@ -287,14 +289,14 @@ bool SGridMapEditorToolkitWidget::IsSettingsTool() const
 	return GridMapEditorMode->UISettings.GetSettingsToolSelected();
 }
 
-void SGridMapEditorToolkitWidget::SetPaintHeight(float InHeight)
+void SGridMapEditorToolkitWidget::SetPaintOrigin(FVector NewPaintOrigin)
 {
-	GridMapEditorMode->UISettings.SetPaintHeight(InHeight);
+	GridMapEditorMode->UISettings.SetPaintOrigin(NewPaintOrigin);
 }
 
-TOptional<float> SGridMapEditorToolkitWidget::GetPaintHeight() const
+TOptional<FVector> SGridMapEditorToolkitWidget::GetPaintOrigin() const
 {
-	return GridMapEditorMode->UISettings.GetPaintHeight();
+	return GridMapEditorMode->UISettings.GetPaintOrigin();
 }
 
 void SGridMapEditorToolkitWidget::OnChangeTileSet(UObject* NewAsset)

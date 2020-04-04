@@ -52,6 +52,8 @@ public:
 	const TArray<class UGridMapTileSet*>& GetActiveTileSets() const;
 	void SetActiveTileSet(class UGridMapTileSet* TileSet);
 
+	void UpdateAllTiles();
+
 private:
 	void BindCommandList();
 	void ClearAllToolSelection();

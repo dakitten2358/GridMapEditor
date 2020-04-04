@@ -34,8 +34,8 @@ private:
 	FText GetGridMapEditorErrorText() const;
 
 	// helpers for getting/setting ui
-	void SetPaintHeight(float InHeight);
-	TOptional<float> GetPaintHeight() const;
+	void SetPaintOrigin(FVector InHeight);
+	TOptional<FVector> GetPaintOrigin() const;
 
 	void OnChangeTileSet(UObject* NewAsset);
 	UObject* GetCurrentTileSet() const;

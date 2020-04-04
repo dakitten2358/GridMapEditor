@@ -4,6 +4,7 @@
 #include "DrawDebugHelpers.h"
 #include "EditorModeManager.h"
 #include "EditorViewportClient.h"
+#include "EngineUtils.h"
 #include "Engine/CollisionProfile.h"
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
@@ -23,6 +24,7 @@ const FEditorModeID FGridMapEditorMode::EM_GridMapEditorModeId = TEXT("EM_GridMa
 
 FGridMapEditorMode::FGridMapEditorMode()
 	: FEdMode()
+	, ActiveTileSet(nullptr)
 {
 	BrushDefaultHighlightColor = FColor(127, 127, 255, 255);
 	BrushWarningHighlightColor = FColor::Red;
@@ -374,7 +376,7 @@ void FGridMapEditorMode::GridMapBrushTrace(FEditorViewportClient* ViewportClient
 	{
 		if (UISettings.GetPaintToolSelected())
 		{
-			const FPlane GroundPlane(FVector(0, 0, UISettings.GetPaintHeight()), FVector::UpVector);
+			const FPlane GroundPlane(UISettings.GetPaintOrigin(), FVector::UpVector);
 
 			FVector IntersectionLocation = FMath::RayPlaneIntersection(InRayOrigin, InRayDirection, GroundPlane);
 			BrushLocation = SnapLocation(IntersectionLocation);
@@ -392,7 +394,7 @@ void FGridMapEditorMode::GridMapBrushTrace(FEditorViewportClient* ViewportClient
 
 FVector FGridMapEditorMode::SnapLocation(const FVector& InLocation)
 {
-	int32 SnapWidth = GEditor->GetGridSize();
+	int32 SnapWidth = GetTileSize();
 	if (SnapWidth <= 0) {
 		return InLocation;
 	}
@@ -504,6 +506,22 @@ bool FGridMapEditorMode::TilesAt(UWorld* World, const FVector& Origin, TArray<AG
 	return OutTiles.Num() > 0;
 }
 
+void FGridMapEditorMode::UpdateAllTiles()
+{
+	TArray<FAdjacentTile> AllTiles;
+	
+	for (TActorIterator<AGridMapStaticMeshActor> It(GetWorld(), AGridMapStaticMeshActor::StaticClass()); It; ++It)
+	{
+		AGridMapStaticMeshActor* Actor = *It;
+		if (Actor && !Actor->IsPendingKill())
+		{
+			AllTiles.Add(FAdjacentTile(Actor, 0));
+		}
+	}
+
+	UpdateAdjacentTiles(GetWorld(), AllTiles);
+}
+
 void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, const TArray<FAdjacentTile>& RootActors)
 {
 	TArray<FAdjacentTile> AdjacentTiles;
@@ -599,12 +617,16 @@ bool FGridMapEditorMode::GetAdjacentTiles(UWorld* World, const FVector& Origin, 
 
 int32 FGridMapEditorMode::GetTileSize() const
 {
+	if (ActiveTileSet)
+		return ActiveTileSet->TileSize;
+
+	// fallback on the editor grid size
 	return GEditor->GetGridSize();
 }
 
 float FGridMapEditorMode::GetTileCheckRadius() const
 {
-	return GetTileSize() / 3.0f;
+	return GetTileSize() * 0.45f;
 }
 
 void FGridMapEditorMode::AddActiveTileSet(UGridMapTileSet* TileSet)
@@ -629,7 +651,7 @@ void FGridMapEditorMode::SetActiveTileSet(UGridMapTileSet* TileSet)
 	ActiveTileSet = TileSet;
 	for (UGridMapTileSet* ExistingTileSet : ActiveTileSets)
 	{
-		if (ExistingTileSet->GetName() == TileSet->GetName())
+		if (TileSet != nullptr && ExistingTileSet->GetName() == TileSet->GetName())
 		{
 			ActiveTileSet = ExistingTileSet;
 		}

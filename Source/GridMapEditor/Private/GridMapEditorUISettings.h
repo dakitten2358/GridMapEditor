@@ -18,8 +18,8 @@ public:
 	bool GetSettingsToolSelected() const { return bSettingsToolSelected; }
 	void SetSettingsToolSelected(bool bInSettingsToolSelected) { bSettingsToolSelected = bInSettingsToolSelected; }
 
-	float GetPaintHeight() const { return PaintHeight; }
-	void SetPaintHeight(float InHeight) { PaintHeight = InHeight; }
+	FVector GetPaintOrigin() const { return PaintOrigin; }
+	void SetPaintOrigin(const FVector& NewPaintOrigin) { PaintOrigin = NewPaintOrigin; }
 
 	EGridMapPaintMode GetPaintMode() const { return PaintMode; }
 	void SetPaintMode(EGridMapPaintMode InPaintMode) { PaintMode = InPaintMode; }	
@@ -38,7 +38,7 @@ private:
 	bool bSelectToolSelected;
 	bool bSettingsToolSelected;
 
-	float PaintHeight;
+	FVector PaintOrigin;
 	EGridMapPaintMode PaintMode;
 	bool bHideOwnedActors;
 

@@ -7,6 +7,7 @@
 #include "Widgets/SCompoundWidget.h"
 
 struct FGridMapEditorUISettings;
+class FGridMapEditorMode;
 
 class SGridMapEditorSettingsWidget : public SCompoundWidget
 {
@@ -15,7 +16,7 @@ public:
 	SLATE_END_ARGS()
 
 public:
-	void Construct(const FArguments& InArgs, FGridMapEditorUISettings* GridMapUISettings);
+	void Construct(const FArguments& InArgs, FGridMapEditorUISettings* GridMapUISettings, FGridMapEditorMode* GridMapEditorMode);
 
 private:
 	EVisibility GetVisibility_SettingsTab() const;
@@ -23,6 +24,9 @@ private:
 	void OnCheckStateChanged_DrawUpdatedTiles(ECheckBoxState InState);
 	ECheckBoxState GetCheckState_DrawUpdatedTiles() const;
 
+	FReply OnRebuildAllTiles();
+
 private:
+	FGridMapEditorMode* EditorMode;
 	FGridMapEditorUISettings* UISettings;
 };

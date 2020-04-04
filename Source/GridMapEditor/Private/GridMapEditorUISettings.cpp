@@ -5,7 +5,7 @@ FGridMapEditorUISettings::FGridMapEditorUISettings()
 	: bPaintToolSelected(true)
 	, bSelectToolSelected(false)
 	, bSettingsToolSelected(false)
-	, PaintHeight(0.f)
+	, PaintOrigin(FVector::ZeroVector)
 	, bHideOwnedActors(true)
 	, bDebugDrawUpdatedTiles(false)
 {}
