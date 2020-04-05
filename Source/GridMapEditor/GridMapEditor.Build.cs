@@ -50,6 +50,7 @@ public class GridMapEditor : ModuleRules
                 "ContentBrowser",
                 "AssetTools",
                 "PropertyEditor",
+                "GameplayTags",
             }
 			);
 		

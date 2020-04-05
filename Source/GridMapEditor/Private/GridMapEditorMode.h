@@ -64,16 +64,16 @@ private:
 	void GridMapBrushTrace(FEditorViewportClient* ViewportClient, const FVector& InRayOrigin, const FVector& InRayDirection);
 	
 	int32 GetTileSize() const;
-	float GetTileCheckRadius() const;
+	int32 GetTileHeight() const;
 
 	FVector SnapLocation(const FVector& InLocation);
 
 	void PaintTile();
 	void EraseTile(class AGridMapStaticMeshActor* TileToErase);
 
-	uint32 GetTileAdjacencyBitmask(class UWorld* World, const FVector& Origin, FName TileSetName) const;
+	uint32 GetTileAdjacencyBitmask(class UWorld* World, const FVector& Origin, UGridMapTileSet* TileSet) const;
 	bool TilesAt(class UWorld* World, const FVector& Origin, TArray<class AGridMapStaticMeshActor*>& OutTiles) const;
-	bool GetAdjacentTiles(class UWorld* World, const FVector& Origin, TArray<TPair<class AGridMapStaticMeshActor*, uint32>>& OutAdjacentTiles) const;
+	bool GetAdjacentTiles(class UWorld* World, const FVector& Origin, TArray<TPair<class AGridMapStaticMeshActor*, uint32>>& OutAdjacentTiles, bool bIncludeEmptyTiles = false) const;
 	void UpdateAdjacentTiles(class UWorld* World, const TArray<FAdjacentTile>& RootActors);
 
 public:

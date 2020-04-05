@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+#include "GameplayTagContainer.h"
+#include "TileSetTagRequirements.h"
 #include "TileSet.generated.h"
 
 USTRUCT()
@@ -45,16 +47,22 @@ public:
 	UGridMapTileSet();
 	
 public:
-	UPROPERTY(EditAnywhere)
-	FName Name;
+	UPROPERTY(EditDefaultsOnly, Category="Tile Set Config")
+	FGameplayTagContainer TileTags;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category="Tile Set Config")
+	FTileSetTagRequirements AdjacencyTagRequirements;
+
+	UPROPERTY(EditDefaultsOnly, Category="Tile Set Config")
+	bool bMatchesEmpty;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Tile Set Config")
 	uint32 TileSize;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Tile Set Config")
 	uint32 TileHeight;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category="Tiles")
 	TArray<FGridMapTileList> Tiles;
 
 	const FGridMapTileList* FindTilesForAdjacency(uint32 bitmask) const;

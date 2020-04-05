@@ -264,7 +264,7 @@ void FGridMapEditorMode::PaintTile()
 		if (BrushTraceHitActor.IsValid())
 		{
 			AGridMapStaticMeshActor* BrushTraceHitTile = Cast<AGridMapStaticMeshActor>(BrushTraceHitActor.Get());
-			if (BrushTraceHitTile && BrushTraceHitTile->TileSet->Name == TileSet->Name)
+			if (BrushTraceHitTile && BrushTraceHitTile->TileSet && TileSet->TileTags.DoesTagContainerMatch(BrushTraceHitTile->TileSet->TileTags, EGameplayTagMatchType::Explicit, EGameplayTagMatchType::Explicit, EGameplayContainerMatchType::All))
 				return;
 		}
 
@@ -276,7 +276,7 @@ void FGridMapEditorMode::PaintTile()
 		}
 		
 		// figure out the bitmask for this tile
-		uint32 Adjacency = GetTileAdjacencyBitmask(GetWorld(), BrushLocation, TileSet->Name);
+		uint32 Adjacency = GetTileAdjacencyBitmask(GetWorld(), BrushLocation, TileSet);
 		const FGridMapTileList* TileList = TileSet->FindTilesForAdjacency(Adjacency);
 		if (TileList)
 		{
@@ -470,17 +470,21 @@ EGridMapEditingState FGridMapEditorMode::GetEditingState() const
 	return EGridMapEditingState::Enabled;
 }
 
-uint32 FGridMapEditorMode::GetTileAdjacencyBitmask(UWorld* World, const FVector& Origin, FName TileSetName) const
+uint32 FGridMapEditorMode::GetTileAdjacencyBitmask(UWorld* World, const FVector& Origin, UGridMapTileSet* TileSet) const
 {
 	uint32 bitmask = 0;
 
 	TArray<FAdjacentTile> AdjacentTiles;
-	if (GetAdjacentTiles(World, Origin, AdjacentTiles))
+	if (GetAdjacentTiles(World, Origin, AdjacentTiles, TileSet->bMatchesEmpty))
 	{
 		for (const FAdjacentTile& AdjacentTile : AdjacentTiles)
 		{
-			if (AdjacentTile.Key->TileSet->Name == TileSetName)
+			if (AdjacentTile.Key && TileSet->AdjacencyTagRequirements.RequirementsMet(AdjacentTile.Key->TileSet->TileTags))
 				bitmask |= AdjacentTile.Value;
+			else if (AdjacentTile.Key == nullptr)
+			{
+				bitmask |= AdjacentTile.Value;
+			}
 		}
 	}
 
@@ -493,7 +497,13 @@ bool FGridMapEditorMode::TilesAt(UWorld* World, const FVector& Origin, TArray<AG
 	TArray<AActor*> ActorsToIgnore;
 	TArray<AActor*> OutActors;
 
-	if (UKismetSystemLibrary::SphereOverlapActors(World, Origin, GetTileCheckRadius(), ObjectTypes, AGridMapStaticMeshActor::StaticClass(), ActorsToIgnore, OutActors))
+	int scaledGridSize = (int)((GetTileSize() * .95f)/2.f);
+	int scaledGridHeight = (int)(GetTileHeight()/2.f);
+
+	float tileCheckRadius = scaledGridSize * .45f;
+
+	//if (UKismetSystemLibrary::SphereOverlapActors(World, Origin, tileCheckRadius, ObjectTypes, AGridMapStaticMeshActor::StaticClass(), ActorsToIgnore, OutActors))
+	if (UKismetSystemLibrary::BoxOverlapActors(World, Origin, FVector(scaledGridSize, scaledGridSize, scaledGridHeight), ObjectTypes, AGridMapStaticMeshActor::StaticClass(), ActorsToIgnore, OutActors))
 	{
 		OutTiles.Reserve(OutActors.Num());
 		for (AActor* OutActor : OutActors)
@@ -543,7 +553,7 @@ void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, const TArray<FAdjace
 			continue;
 
 		UGridMapTileSet* TileSet = CurrentActor->TileSet;
-		uint32 Adjacency = GetTileAdjacencyBitmask(GetWorld(), CurrentActor->GetActorLocation(), TileSet->Name);
+		uint32 Adjacency = GetTileAdjacencyBitmask(GetWorld(), CurrentActor->GetActorLocation(), TileSet);
 		const FGridMapTileList* TileList = TileSet->FindTilesForAdjacency(Adjacency);
 		if (TileList == nullptr)
 		{
@@ -581,7 +591,7 @@ void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, const TArray<FAdjace
 	}
 }
 
-bool FGridMapEditorMode::GetAdjacentTiles(UWorld* World, const FVector& Origin, TArray<TPair<AGridMapStaticMeshActor*, uint32>>& OutAdjacentTiles) const
+bool FGridMapEditorMode::GetAdjacentTiles(UWorld* World, const FVector& Origin, TArray<TPair<AGridMapStaticMeshActor*, uint32>>& OutAdjacentTiles, bool bIncludeEmptyTiles) const
 {
 	static const int TileCount = 4;
 
@@ -610,6 +620,11 @@ bool FGridMapEditorMode::GetAdjacentTiles(UWorld* World, const FVector& Origin, 
 			}
 			Tiles.Empty();
 		}
+		else if (bIncludeEmptyTiles)
+		{
+			OutAdjacentTiles.Add(TPair<AGridMapStaticMeshActor*, uint32>(nullptr, Bits[i]));
+		}
+		
 	}
 
 	return OutAdjacentTiles.Num() > 0;
@@ -624,9 +639,12 @@ int32 FGridMapEditorMode::GetTileSize() const
 	return GEditor->GetGridSize();
 }
 
-float FGridMapEditorMode::GetTileCheckRadius() const
+int32 FGridMapEditorMode::GetTileHeight() const
 {
-	return GetTileSize() * 0.45f;
+	if (ActiveTileSet)
+		return ActiveTileSet->TileHeight;
+
+	return GEditor->GetGridSize();
 }
 
 void FGridMapEditorMode::AddActiveTileSet(UGridMapTileSet* TileSet)
