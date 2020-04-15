@@ -5,7 +5,7 @@
 #include "SceneView.h"
 #include "Misc/App.h"
 
-void UTileSet_ThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uint32 Width, uint32 Height, FRenderTarget* RenderTarget, FCanvas* Canvas)
+void UTileSet_ThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uint32 Width, uint32 Height, FRenderTarget* RenderTarget, FCanvas* Canvas, bool bAdditionalViewFamily)
 {
 	UGridMapTileSet* TileSet = Cast<UGridMapTileSet>(Object);
 
@@ -36,5 +36,5 @@ void UTileSet_ThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uint32 
 	if (!TileSet->MeshForIcon)
 		return;
 
-	Super::Draw(TileSet->MeshForIcon, X, Y, Width, Height, RenderTarget, Canvas);
+	Super::Draw(TileSet->MeshForIcon, X, Y, Width, Height, RenderTarget, Canvas, bAdditionalViewFamily);
 }
