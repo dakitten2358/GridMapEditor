@@ -67,6 +67,9 @@ public:
 
 	const FGridMapTileList* FindTilesForAdjacency(uint32 bitmask) const;
 
+protected:
+	const FGridMapTileList* SearchForTilesWithCompatibleAdjacency(uint32 bitmask) const;
+
 public:
 	//this can't be here, it breaks non-editor builds :/
 //#if WITH_EDITOR

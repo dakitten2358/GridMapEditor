@@ -558,6 +558,7 @@ void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, const TArray<FAdjace
 		if (TileList == nullptr)
 		{
 			GEngine->AddOnScreenDebugMessage(INDEX_NONE, 4.0f, FColor::Red, TEXT("Failed to find tile!"), true, FVector2D::UnitVector);
+			::DrawDebugPoint(GetWorld(), CurrentActor->GetActorLocation(), 12, FColor::Red, false, 10.f);
 			continue;
 		}
 		UStaticMesh* ExpectedStaticMesh = TileList->GetRandomTile().LoadSynchronous();
@@ -593,20 +594,30 @@ void FGridMapEditorMode::UpdateAdjacentTiles(UWorld* World, const TArray<FAdjace
 
 bool FGridMapEditorMode::GetAdjacentTiles(UWorld* World, const FVector& Origin, TArray<TPair<AGridMapStaticMeshActor*, uint32>>& OutAdjacentTiles, bool bIncludeEmptyTiles) const
 {
-	static const int TileCount = 4;
+	static const int TileCount = 8;
 
 	static FVector Offsets[TileCount]{
 		FVector(0, -GetTileSize(), 0),	// top-center
 		FVector(-GetTileSize(), 0, 0),	// center-left
 		FVector(GetTileSize(), 0, 0),	// center-right
 		FVector(0, GetTileSize(), 0),	// botton-center
+
+		FVector(-GetTileSize(), -GetTileSize(), 0),	// top left
+		FVector(GetTileSize(), -GetTileSize(), 0),	// top right
+		FVector(-GetTileSize(), GetTileSize(), 0),	// bottom left
+		FVector(GetTileSize(), GetTileSize(), 0),	// bottom right
 	};
 
 	static uint32 Bits[TileCount]{
-		1 << 0,
-		1 << 1,
-		1 << 2,
-		1 << 3,
+		1 << 0, // top
+		1 << 1, // left
+		1 << 2, // right
+		1 << 3, // bottom
+
+		1 << 4,	// top left
+		1 << 5,	// top right
+		1 << 6,	// bottom left
+		1 << 7,	// bottom right
 	};
 
 	TArray<AGridMapStaticMeshActor*> Tiles;
@@ -624,7 +635,7 @@ bool FGridMapEditorMode::GetAdjacentTiles(UWorld* World, const FVector& Origin, 
 		{
 			OutAdjacentTiles.Add(TPair<AGridMapStaticMeshActor*, uint32>(nullptr, Bits[i]));
 		}
-		
+
 	}
 
 	return OutAdjacentTiles.Num() > 0;
