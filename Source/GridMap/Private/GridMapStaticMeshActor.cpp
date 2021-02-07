@@ -3,3 +3,8 @@
 
 #include "GridMapStaticMeshActor.h"
 
+AGridMapStaticMeshActor::AGridMapStaticMeshActor(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	GetStaticMeshComponent()->SetGenerateOverlapEvents(true);
+}

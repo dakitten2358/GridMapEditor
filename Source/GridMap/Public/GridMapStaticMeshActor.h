@@ -15,6 +15,8 @@ class GRIDMAP_API AGridMapStaticMeshActor : public AStaticMeshActor
 	GENERATED_BODY()
 
 public:
+	AGridMapStaticMeshActor(const FObjectInitializer& ObjectInitializer = FObjectInitializer());
+
 	UPROPERTY()
 	class UGridMapTileSet* TileSet;	
 };
