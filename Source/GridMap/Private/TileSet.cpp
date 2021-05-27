@@ -9,10 +9,10 @@ UGridMapTileSet::UGridMapTileSet()
 {
 }
 
-TAssetPtr<class UStaticMesh> FGridMapTileList::GetRandomTile() const
+TSoftObjectPtr<class UStaticMesh> FGridMapTileList::GetRandomTile() const
 {
 	if (Tiles.Num() == 0)
-		return TAssetPtr<class UStaticMesh>();
+		return TSoftObjectPtr<class UStaticMesh>();
 
 	int32 RandomElementIndex = FMath::RandRange(0, Tiles.Num() - 1);
 	return Tiles[RandomElementIndex];

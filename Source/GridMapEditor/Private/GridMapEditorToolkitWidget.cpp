@@ -111,7 +111,7 @@ END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 TSharedRef<SWidget> SGridMapEditorToolkitWidget::BuildToolBar()
 {
-	FToolBarBuilder Toolbar(GridMapEditorMode->UICommandList, FMultiBoxCustomization::None, nullptr, Orient_Vertical);
+	FVerticalToolBarBuilder Toolbar(GridMapEditorMode->UICommandList, FMultiBoxCustomization::None);
 	Toolbar.SetLabelVisibility(EVisibility::Collapsed);
 	Toolbar.SetStyle(&FEditorStyle::Get(), "FoliageEditToolbar");
 	{

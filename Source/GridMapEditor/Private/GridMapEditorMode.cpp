@@ -264,7 +264,7 @@ void FGridMapEditorMode::PaintTile()
 		if (BrushTraceHitActor.IsValid())
 		{
 			AGridMapStaticMeshActor* BrushTraceHitTile = Cast<AGridMapStaticMeshActor>(BrushTraceHitActor.Get());
-			if (BrushTraceHitTile && BrushTraceHitTile->TileSet && TileSet->TileTags.DoesTagContainerMatch(BrushTraceHitTile->TileSet->TileTags, EGameplayTagMatchType::Explicit, EGameplayTagMatchType::Explicit, EGameplayContainerMatchType::All))
+			if (BrushTraceHitTile && BrushTraceHitTile->TileSet && TileSet->TileTags.HasAllExact(BrushTraceHitTile->TileSet->TileTags))
 				return;
 		}
 
@@ -280,7 +280,7 @@ void FGridMapEditorMode::PaintTile()
 		const FGridMapTileList* TileList = TileSet->FindTilesForAdjacency(Adjacency);
 		if (TileList)
 		{
-			TAssetPtr<UStaticMesh> StaticMeshAsset = TileList->GetRandomTile();
+			TSoftObjectPtr<UStaticMesh> StaticMeshAsset = TileList->GetRandomTile();
 
 			FActorSpawnParameters SpawnParameters;
 			if (UISettings.GetHideOwnedActors())

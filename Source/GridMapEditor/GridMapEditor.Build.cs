@@ -41,6 +41,7 @@ public class GridMapEditor : ModuleRules
 				"InputCore",
 				"UnrealEd",
 				"LevelEditor",
+				"EditorFramework",
 				// ... add private dependencies that you statically link with here ...	
                 "GridMap",
                 "Projects",

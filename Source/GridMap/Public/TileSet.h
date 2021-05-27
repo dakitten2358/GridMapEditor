@@ -31,9 +31,9 @@ public:
 	FRotator Rotation;
 
 	UPROPERTY(EditAnywhere, meta = (AllowAbstract))
-	TArray<TAssetPtr<class UStaticMesh>> Tiles;
+	TArray<TSoftObjectPtr<class UStaticMesh>> Tiles;
 
-	TAssetPtr<class UStaticMesh> GetRandomTile() const;
+	TSoftObjectPtr<class UStaticMesh> GetRandomTile() const;
 };
 
 /**
