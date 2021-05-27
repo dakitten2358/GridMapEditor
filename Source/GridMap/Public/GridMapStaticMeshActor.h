@@ -18,5 +18,5 @@ public:
 	AGridMapStaticMeshActor(const FObjectInitializer& ObjectInitializer = FObjectInitializer());
 
 	UPROPERTY()
-	class UGridMapTileSet* TileSet;	
+	TObjectPtr<class UGridMapTileSet> TileSet;	
 };
