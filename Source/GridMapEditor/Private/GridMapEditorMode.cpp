@@ -523,7 +523,7 @@ void FGridMapEditorMode::UpdateAllTiles()
 	for (TActorIterator<AGridMapStaticMeshActor> It(GetWorld(), AGridMapStaticMeshActor::StaticClass()); It; ++It)
 	{
 		AGridMapStaticMeshActor* Actor = *It;
-		if (Actor && !Actor->IsPendingKill())
+		if (IsValid(Actor))
 		{
 			AllTiles.Add(FAdjacentTile(Actor, 0));
 		}
