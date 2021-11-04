@@ -287,11 +287,11 @@ void FGridMapEditorMode::PaintTile()
 			{
 				SpawnParameters.bHideFromSceneOutliner = true;
 			}
-			AGridMapStaticMeshActor* MeshActor = GetWorld()->SpawnActor<AGridMapStaticMeshActor>(AGridMapStaticMeshActor::StaticClass(), SpawnParameters);
+			AGridMapStaticMeshActor* MeshActor = GetWorld()->SpawnActor<AGridMapStaticMeshActor>(SpawnParameters);
 			MeshActor->TileSet = TileSet;
 
 			// Rename the display name of the new actor in the editor to reflect the mesh that is being created from.
-			FActorLabelUtilities::SetActorLabelUnique(MeshActor, TEXT("ActorLabelUnique"));
+			FActorLabelUtilities::SetActorLabelUnique(MeshActor, CreateActorLabel(TileSet));
 
 			UStaticMesh* StaticMesh = Cast<UStaticMesh>(StaticMeshAsset.LoadSynchronous());
 			MeshActor->GetStaticMeshComponent()->SetStaticMesh(StaticMesh);
@@ -687,4 +687,11 @@ void FGridMapEditorMode::SetActiveTileSet(UGridMapTileSet* TileSet)
 	}
 
 	UISettings.SetCurrentTileSet(ActiveTileSet);
+}
+
+FString FGridMapEditorMode::CreateActorLabel(const class UGridMapTileSet* TileSet) const
+{
+	FString TileSetName = TileSet->GetName();
+	FString CleanTileSetName = TileSetName.StartsWith("TS_") ? TileSetName.RightChop(3) : TileSetName;
+	return FString::Printf(TEXT("SM_%s"), *CleanTileSetName);
 }

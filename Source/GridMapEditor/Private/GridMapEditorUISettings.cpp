@@ -6,6 +6,6 @@ FGridMapEditorUISettings::FGridMapEditorUISettings()
 	, bSelectToolSelected(false)
 	, bSettingsToolSelected(false)
 	, PaintOrigin(FVector::ZeroVector)
-	, bHideOwnedActors(true)
+	, bHideOwnedActors(false)
 	, bDebugDrawUpdatedTiles(false)
 {}

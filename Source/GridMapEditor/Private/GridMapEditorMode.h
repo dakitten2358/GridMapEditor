@@ -76,6 +76,8 @@ private:
 	bool GetAdjacentTiles(class UWorld* World, const FVector& Origin, TArray<TPair<class AGridMapStaticMeshActor*, uint32>>& OutAdjacentTiles, bool bIncludeEmptyTiles = false) const;
 	void UpdateAdjacentTiles(class UWorld* World, const TArray<FAdjacentTile>& RootActors);
 
+	FString CreateActorLabel(const class UGridMapTileSet* TileSet) const;
+
 public:
 	FGridMapEditorUISettings UISettings;
 
