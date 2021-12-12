@@ -15,7 +15,7 @@ struct GRIDMAP_API FGridMapTileBitset
 
 public:
 	UPROPERTY(EditAnywhere)
-	uint32 Bitset;
+	uint32 Bitset = 0;
 };
 
 USTRUCT()
@@ -28,7 +28,7 @@ public:
 	FGridMapTileBitset TileAdjacency;
 
 	UPROPERTY(EditAnywhere)
-	FRotator Rotation;
+	FRotator Rotation = FRotator::ZeroRotator;
 
 	UPROPERTY(EditAnywhere, meta = (AllowAbstract))
 	TArray<TSoftObjectPtr<class UStaticMesh>> Tiles;
