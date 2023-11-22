@@ -1,6 +1,7 @@
 #include "GridMapEditorToolkitWidget.h"
 #include "Editor.h"
 #include "EditorModeManager.h"
+#include "EditorStyleSet.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "GridMapEditCommands.h"
 #include "GridMapEditorMode.h"
